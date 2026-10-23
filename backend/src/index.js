@@ -1,25 +1,36 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middlewares
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.get('/', (req, res) => {
-  res.json({ message: 'JEFIT APP API - Ready' });
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", supabase: !!supabase });
 });
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/jefit_app')
-  .then(() => console.log('MongoDB conectado'))
-  .catch(err => console.error('MongoDB error:', err));
+app.post("/api/ranks/calculate/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { data, error } = await supabase.rpc("calculate_user_ranks", {
+      target_user_id: userId
+    });
+    if (error) return res.status(400).json({ error: error.message });
+    res.json({ data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.listen(PORT, () => {
-  console.log(`Server corriendo en puerto ${PORT}`);
+  console.log("JEFIT RPC server corriendo en puerto " + PORT);
 });

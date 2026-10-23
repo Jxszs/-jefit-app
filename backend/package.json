@@ -1,24 +1,15 @@
 {
-  "name": "jefit-app-backend",
+  "name": "jefit-app-rpc",
   "version": "1.0.0",
-  "description": "API REST para JEFIT APP",
+  "description": "RPC functions for JEFIT APP (Supabase integration)",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "test": "jest"
+    "dev": "nodemon src/index.js"
   },
   "dependencies": {
-    "express": "^4.19.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "mongoose": "^8.5.2",
-    "jsonwebtoken": "^9.0.2",
-    "bcryptjs": "^2.4.3",
-    "express-validator": "^7.2.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.4",
-    "jest": "^29.7.0"
+    "@supabase/supabase-js": "^2.45.0"
   }
 }
