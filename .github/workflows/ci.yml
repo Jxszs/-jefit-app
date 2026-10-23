@@ -1,0 +1,45 @@
+name: jefit-app
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: cd backend && npm install && npm run dev &  # Start server
+      - run: sleep 5 && curl -s http://localhost:5000/api/health
+      - name: Health check
+        run: |
+          curl -f http://localhost:5000/api/health || exit 1
+
+  flutter-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: cd frontend && flutter pub get
+      - run: cd frontend && flutter analyze
+      - run: cd frontend && flutter test
+
+  python-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: cd algorithms && pip install -r requirements.txt
+      - run: cd algorithms && python -c "from rank_calculator import determinar_badge; print(determinar_badge(95))"
