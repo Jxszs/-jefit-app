@@ -21,5 +21,6 @@ app.get("/api/health", (req, res) => res.json({ status: "ok", supabase: !!supaba
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/tracking", require("./routes/trainingRoutes"));
 app.use("/api/checkin", require("./routes/checkinRoutes"));
+app.use("/api/ejercicios", require("./routes/exerciseRoutes"));
 
 app.listen(PORT, () => console.log("JEFIT RPC server corriendo en puerto " + PORT));
