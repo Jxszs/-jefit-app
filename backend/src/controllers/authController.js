@@ -1,88 +1,71 @@
-const jwt = require('jsonwebtoken');
+// Auth controller - robado del flujo de Smart Fit + JWT
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { supabase } = require('../utils/supabaseClient');
 
-// Generar JWT
 const generarToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
 
-// POST /api/auth/register
+// Register (User o Entrenador) — Smart Fit style role selector
 const registerUser = async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
-    // Verificar si usuario existe
-    let user = await User.findOne({ email });
-    if (user) return res.status(400).json({ message: 'Usuario ya existe' });
+    let existing = await supabase.from('profiles').select('id').eq('email', email).single();
+    if (existing.data) return res.status(400).json({ message: 'Usuario ya existe' });
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    user = await User.create({
-      uid: uuidv4(),
-      name,
+    const { data, error } = await supabase.auth.signUp({
       email,
-      password_hash: hashedPassword,
-      role: role || 'USER',
-      cupos_total: role === 'ENTRENADOR' ? 10 : 0,
+      password,
+      options: { data: { name, role: role || 'USER', cupos_total: role === 'ENTRENADOR' ? 10 : 0 } }
     });
+
+    if (error) return res.status(400).json({ message: error.message });
 
     res.status(201).json({
-      _id: user._id,
-      uid: user.uid,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      plan: user.plan,
-      token: generarToken(user._id),
+      uid: data.user?.id,
+      name,
+      email,
+      role: role || 'USER',
+      token: generarToken(data.user?.id),
     });
-  } catch (error) {
-    res.status(500).json({ message: 'Error en el servidor', error: error.message });
-  }
-};
-
-// POST /api/auth/login
-const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'Credenciales inválidas' });
-
-    const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) return res.status(400).json({ message: 'Credenciales inválidas' });
-
-    res.json({
-      _id: user._id,
-      uid: user.uid,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      plan: user.plan,
-      token: generarToken(user._id),
-    });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ message: 'Error en el servidor' });
   }
 };
 
-// GET /api/auth/me
+// Login
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return res.status(400).json({ message: 'Credenciales inválidas' });
+
+    const profile = await supabase.from('profiles').select().eq('id', data.user?.id).single();
+
+    res.json({
+      uid: data.user?.id,
+      ...profile.data,
+      token: generarToken(data.user?.id),
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error en el servidor' });
+  }
+};
+
+// Perfil
 const getUserProfile = async (req, res) => {
-  const user = req.user;
-  res.json({
-    _id: user._id,
-    uid: user.uid,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    plan: user.plan,
-    body_weight: user.body_weight,
-    cupos_used: user.cupos_used,
-    cupos_total: user.cupos_total,
-    streak_count: user.streak_count,
-  });
+  const { data, error } = await supabase.from('profiles')
+    .select('name, role, plan, body_weight, cupos_used, cupos_total, streak_count')
+    .eq('id', req.user.id)
+    .single();
+
+  if (error) return res.status(400).json({ message: error.message });
+  res.json({ uid: req.user.id, ...data });
 };
 
 module.exports = { registerUser, loginUser, getUserProfile };

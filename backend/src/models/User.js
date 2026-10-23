@@ -13,16 +13,16 @@ const UserSchema = new mongoose.Schema({
   cupos_total: { type: Number, default: 0 },
   streak_count: { type: Number, default: 0 },
   last_checkin: { type: Date },
-}, { timestamps: true });
+  created_at: { type: Date, default: Date.now },
+  updated_at: { type: Date, default: Date.now }
+});
 
-// Hash password antes de guardar
 UserSchema.pre('save', async function(next) {
   if (!this.isModified('password_hash')) return next();
   this.password_hash = await bcrypt.hash(this.password_hash, 10);
   next();
 });
 
-// Comparar password
 UserSchema.methods.matchPassword = async function(password) {
   return await bcrypt.compare(password, this.password_hash);
 };
