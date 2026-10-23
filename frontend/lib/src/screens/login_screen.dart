@@ -71,8 +71,8 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: InputDecoration(
                 labelText: 'Email',
                 labelStyle: TextStyle(color: AppColors.textSecondary),
-                enabledBorder: UnderlineBorder(borderSide: BorderSide(color: AppColors.borderDark)),
-                focusedBorder: UnderlineBorder(borderSide: BorderSide(color: AppColors.success)),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.borderDark)),
+                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.success)),
               ),
               style: TextStyle(color: AppColors.textPrimary),
               keyboardType: TextInputType.emailAddress,
@@ -84,8 +84,8 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: InputDecoration(
                 labelText: 'Password',
                 labelStyle: TextStyle(color: AppColors.textSecondary),
-                enabledBorder: UnderlineBorder(borderSide: BorderSide(color: AppColors.borderDark)),
-                focusedBorder: UnderlineBorder(borderSide: BorderSide(color: AppColors.success)),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.borderDark)),
+                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.success)),
               ),
               style: TextStyle(color: AppColors.textPrimary),
               obscureText: true,

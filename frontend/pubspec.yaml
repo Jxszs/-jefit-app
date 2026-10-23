@@ -10,11 +10,10 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.6
   # Estilo moderno (dark aesthetic)
-  shadcn_flutter: ^0.7.0
-  shadcn_flutter_ui: ^0.1.2
   google_fonts: ^6.0.0
   flutter_animate: ^4.0.0
   iconsax: ^0.0.7
+  cached_network_image: ^3.3.1
   # Supabase (auth + DB online)
   supabase_flutter: ^2.15.0
   # State management

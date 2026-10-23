@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:jefit_app/src/theme/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
