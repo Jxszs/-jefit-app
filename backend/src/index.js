@@ -14,23 +14,12 @@ const supabase = createClient(
 app.use(cors());
 app.use(express.json());
 
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", supabase: !!supabase });
-});
+// Health
+app.get("/api/health", (req, res) => res.json({ status: "ok", supabase: !!supabase }));
 
-app.post("/api/ranks/calculate/:userId", async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const { data, error } = await supabase.rpc("calculate_user_ranks", {
-      target_user_id: userId
-    });
-    if (error) return res.status(400).json({ error: error.message });
-    res.json({ data });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// Routes
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/tracking", require("./routes/trainingRoutes"));
+app.use("/api/checkin", require("./routes/checkinRoutes"));
 
-app.listen(PORT, () => {
-  console.log("JEFIT RPC server corriendo en puerto " + PORT);
-});
+app.listen(PORT, () => console.log("JEFIT RPC server corriendo en puerto " + PORT));

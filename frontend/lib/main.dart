@@ -1,10 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jefit_app/src/theme/app_colors.dart';
+import 'package:jefit_app/src/screens/login_screen.dart';
+import 'package:jefit_app/src/screens/dashboard_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: const String.fromEnvironment('SUPABASE_URL'),
+    anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
+  );
+
   runApp(const JefitApp());
 }
+
+final supabase = Supabase.instance.client;
 
 class JefitApp extends StatelessWidget {
   const JefitApp({super.key});
@@ -20,31 +32,29 @@ class JefitApp extends StatelessWidget {
         textTheme: GoogleFonts.interTextTheme(
           ThemeData(brightness: Brightness.dark).textTheme,
         ),
+        useMaterial3: true,
       ),
-      home: const DashboardScreen(),
+      home: const AuthGate(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+// Auto-redirect según estado de auth (robado de apps modernas)
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
 
-  @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.primaryBg,
-      body: Center(
-        child: Text(
-          'JEFIT APP',
-          style: TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-      ),
+    return StreamBuilder<AuthState>(
+      stream: supabase.auth.onAuthStateChange,
+      builder: (context, snapshot) {
+        final session = snapshot.data?.session;
+        if (session != null) {
+          return const DashboardScreen();
+        }
+        return const LoginScreen();
+      },
     );
   }
 }
